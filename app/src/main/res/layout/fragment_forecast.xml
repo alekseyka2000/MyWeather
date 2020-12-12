@@ -5,9 +5,9 @@
     android:layout_height="match_parent"
     tools:context=".views.weather_list.ForecastFragment">
 
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listForecast"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="list" />
+        android:layout_height="match_parent" />
 
 </FrameLayout>

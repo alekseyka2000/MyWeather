@@ -6,6 +6,7 @@ import com.example.myweather.model.location_service.LocationService
 import com.example.myweather.model.location_service.LocationServiceImpl
 import com.example.myweather.model.weather_service.WeatherService
 import com.example.myweather.model.weather_service.WeatherServiceImpl
+import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 
 class Repository {
@@ -13,11 +14,10 @@ class Repository {
     private val locationService: LocationService by lazy { LocationServiceImpl() }
     private val weatherService: WeatherService by lazy { WeatherServiceImpl() }
 
-    fun getWeatherData() {
+    fun getWeatherData(): Single<List<ForecastForView>> =
         weatherService.getWeather(locationService.getLocation())
             .map {Mapper().invoke(it) }
-            .observeOn(Schedulers.io())
-    }
+            .subscribeOn(Schedulers.io())
 
     class Mapper : (ForecastData) -> List<ForecastForView> {
         override fun invoke(data: ForecastData): List<ForecastForView> {
