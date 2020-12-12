@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_list"
+        android:icon="@drawable/ic_baseline_wb_sunny_24"
+        android:title="@string/today" />
+
+    <item
+        android:id="@+id/navigation_exchange"
+        android:icon="@drawable/ic_baseline_wb_cloudy_24"
+        android:title="@string/forecast" />
+
+</menu>
