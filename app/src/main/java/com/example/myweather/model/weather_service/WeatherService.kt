@@ -4,5 +4,5 @@ import com.example.myweather.model.entity.ForecastData
 import io.reactivex.Single
 
 interface WeatherService {
-    fun getWeather(lat: String, lon: String):Single<ForecastData>
+    fun getWeather(location: Pair<String, String>):Single<ForecastData>
 }
