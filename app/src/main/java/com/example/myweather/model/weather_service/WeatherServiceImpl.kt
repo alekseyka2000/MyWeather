@@ -1,4 +1,4 @@
-package com.example.myweather.model.api
+package com.example.myweather.model.weather_service
 
 import com.example.myweather.model.entity.ForecastData
 import io.reactivex.Single
