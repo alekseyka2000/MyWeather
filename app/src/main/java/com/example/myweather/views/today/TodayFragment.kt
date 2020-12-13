@@ -7,17 +7,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import com.example.myweather.databinding.FragmentTodayBinding
 import com.example.myweather.model.entity.ForecastForView
 import com.example.myweather.views.weather_list.ForecastViewModel
+import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.core.component.KoinApiExtension
 
 
+@KoinApiExtension
 @Suppress("DEPRECATION")
 class TodayFragment : Fragment() {
 
     //didn't create viewModel for this fragment so ForecastViewModel is enough
-    private lateinit var viewModel: ForecastViewModel
+    private val viewModel: ForecastViewModel by viewModel()
     private lateinit var binding: FragmentTodayBinding
 
     override fun onCreateView(
@@ -31,8 +33,6 @@ class TodayFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel = ViewModelProvider(viewModelStore, ViewModelProvider.NewInstanceFactory())
-            .get(ForecastViewModel::class.java)
         viewModel.liveData.observe(viewLifecycleOwner, { list ->
             setTodayFragment(list)
         })
@@ -67,7 +67,7 @@ class TodayFragment : Fragment() {
 
         //set pressure text
         // incorrect icon for that value!!!!!!!!!!
-        binding.pressure.text = "${forecast[0].pressure } hPa"
+        binding.pressure.text = "${forecast[0].pressure} hPa"
 
         //set wind speed text
         binding.windSpeed.text = "${forecast[0].windSpeed} km/h"

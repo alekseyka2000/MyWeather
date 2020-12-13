@@ -8,13 +8,13 @@ import com.example.myweather.model.entity.ForecastForView
 
 @Dao
 interface ForecastDAO {
-    @Query ("select * from forecast_table")
+    @Query ("select * from forecast")
     fun getAll(): List<ForecastForView>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(forecast: ForecastForView)
+    fun insert(forecast: List<ForecastForView>)
 
-    @Query("DELETE FROM forecast_table")
-    suspend fun deleteAll()
+    @Query("DELETE FROM forecast")
+    fun deleteAll()
 
 }

@@ -8,13 +8,14 @@ import androidx.lifecycle.ViewModel
 import com.example.myweather.model.Repository
 import com.example.myweather.model.entity.ForecastForView
 import io.reactivex.android.schedulers.AndroidSchedulers
+import org.koin.core.component.KoinApiExtension
 
-class ForecastViewModel : ViewModel() {
+class ForecastViewModel(private val repository: Repository) : ViewModel() {
 
     private val mutableLiveData = MutableLiveData<List<ForecastForView>>()
     val liveData: LiveData<List<ForecastForView>> = mutableLiveData
-    private val repository by lazy { Repository() }
 
+    @KoinApiExtension
     @SuppressLint("CheckResult")
     fun fetchForecastData() {
         repository.getWeatherData()

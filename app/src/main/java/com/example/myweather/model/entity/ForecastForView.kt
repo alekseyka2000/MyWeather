@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "forecast_table")
+@Entity(tableName = "forecast")
 data class ForecastForView(
     @PrimaryKey(autoGenerate = false) var id: String,
     @ColumnInfo(name = "date") val date: String,

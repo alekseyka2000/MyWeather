@@ -8,18 +8,20 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myweather.R
 import com.example.myweather.model.entity.ForecastForView
+import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.core.component.KoinApiExtension
 import kotlin.properties.Delegates
 
+@KoinApiExtension
 @Suppress("DEPRECATION")
 class ForecastFragment : Fragment() {
 
-    private lateinit var viewModel: ForecastViewModel
+    private val viewModel: ForecastViewModel by viewModel()
     private val forecastAdapter = ForecastListAdapter()
 
     override fun onCreateView(
@@ -29,6 +31,7 @@ class ForecastFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_forecast, container, false)
     }
 
+    @KoinApiExtension
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -37,8 +40,6 @@ class ForecastFragment : Fragment() {
             adapter = forecastAdapter
         }
 
-        viewModel = ViewModelProvider(viewModelStore, ViewModelProvider.NewInstanceFactory())
-            .get(ForecastViewModel::class.java)
         viewModel.liveData.observe(viewLifecycleOwner, { list ->
             forecastAdapter.listForecast = list
         })
