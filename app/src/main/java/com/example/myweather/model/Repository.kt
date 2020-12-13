@@ -8,6 +8,7 @@ import com.example.myweather.model.weather_service.WeatherService
 import com.example.myweather.model.weather_service.WeatherServiceImpl
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
+import java.util.*
 
 class Repository {
 
@@ -25,6 +26,7 @@ class Repository {
             data.list.forEach {
                 newWeatherList.add(
                     ForecastForView(
+                        UUID.randomUUID().toString(),
                         it.dt_txt,
                         it.weather[0].icon,
                         data.city.name,
