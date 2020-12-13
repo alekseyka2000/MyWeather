@@ -27,8 +27,26 @@ class Repository {
                     ForecastForView(
                         it.dt_txt,
                         it.weather[0].icon,
-                        it.weather[0].main,
-                        (it.main.temp.toInt() - 273).toString()
+                        data.city.name,
+                        data.city.country,
+                        it.weather[0].description,
+                        (it.main.temp.toInt() - 273).toString(),
+                        it.main.humidity.toString(),
+                        precipitation = "1.0 mm",
+                        it.main.pressure.toString(),
+                        it.wind.speed.toString(),
+                        when((it.wind.deg*10).toInt()){
+                            in 0 until 225 -> "N"
+                            in 225 until 675 -> "NE"
+                            in 675 until 1125 -> "E"
+                            in 1125 until 1575 -> "SE"
+                            in 1575 until 2025 -> "S"
+                            in 2025 until 2475 -> "SW"
+                            in 2475 until 2925 -> "W"
+                            in 2925 until 3375 -> "NW"
+                            in 3375 until 3600 -> "N"
+                            else -> "Error"
+                        }
                     )
                 )
             }
