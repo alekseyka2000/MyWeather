@@ -1,6 +1,7 @@
 package com.example.myweather.views.weather_list
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +17,9 @@ import com.example.myweather.model.entity.ForecastForView
 import com.google.android.material.snackbar.Snackbar
 import org.koin.android.viewmodel.ext.android.viewModel
 import org.koin.core.component.KoinApiExtension
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.util.*
 import kotlin.properties.Delegates
 
 @KoinApiExtension
@@ -42,35 +46,65 @@ class ForecastFragment : Fragment() {
         }
 
         viewModel.liveData.observe(viewLifecycleOwner, { list ->
-            forecastAdapter.listForecast = list.second
+            val newList = mutableListOf<Pair<Int, ForecastForView>>()
+            list.second.forEach {
+                if (it.date.takeLast(8) == "00:00:00") {
+                    newList.add(Pair(1, it))
+                    newList.add(Pair(0, it))
+                } else newList.add(Pair(0, it))
+            }
+            forecastAdapter.listForecast = newList
             Snackbar.make(view, list.first, Snackbar.LENGTH_LONG).show()
         })
         viewModel.fetchForecastData()
     }
 
     inner class ForecastListAdapter() :
-        RecyclerView.Adapter<ForecastListAdapter.WeatherViewHolder>() {
+        RecyclerView.Adapter<ForecastListAdapter.BaseViewHolder>() {
 
-        var listForecast: List<ForecastForView> by Delegates.observable(emptyList()) { _, oldValue, newValue ->
+        var listForecast: List<Pair<Int, ForecastForView>> by Delegates.observable(emptyList()) { _, oldValue, newValue ->
             notifyChanges(oldValue, newValue)
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
             val inflater = LayoutInflater.from(parent.context)
-            return WeatherViewHolder(inflater, parent)
+            return if (viewType == 1) DayViewHolder(inflater, parent) else WeatherViewHolder(inflater, parent)
         }
 
-        override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
-            holder.bind(listForecast[position])
+        override fun getItemViewType(position: Int) = listForecast[position].first
+
+        override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+            holder.bind(listForecast[position].second)
         }
 
         override fun getItemCount(): Int = listForecast.size
 
+        open inner class BaseViewHolder(itemView: View) :RecyclerView.ViewHolder(itemView){
+            open fun bind(forecast: ForecastForView){}
+        }
+
+        inner class DayViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
+            BaseViewHolder(inflater.inflate(R.layout.day_of_week_item, parent, false)){
+            private var dayOfWeekTextView: TextView? = null
+
+            init {
+                dayOfWeekTextView = itemView.findViewById(R.id.dayOfWeek)
+            }
+
+            @SuppressLint("SimpleDateFormat", "SetTextI18n")
+            override fun bind (forecast: ForecastForView){
+                val year: Int  = forecast.date.take(4).toInt()
+                val month: Int  = forecast.date.take(7).takeLast(2).toInt()
+                val day: Int  = forecast.date.take(10).takeLast(2).toInt()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    dayOfWeekTextView?.text = LocalDate.parse(forecast.date.take(10)).dayOfWeek.toString()
+                }else dayOfWeekTextView?.text = SimpleDateFormat("EEEE")
+                    .format(Date(year, month, day)).capitalize(Locale.getDefault())
+            }
+        }
+
         inner class WeatherViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
-            RecyclerView.ViewHolder(
-                inflater
-                    .inflate(R.layout.forecast_item, parent, false)
-            ) {
+            BaseViewHolder(inflater.inflate(R.layout.forecast_item, parent, false)) {
             private var forecastImageView: ImageView? = null
             private var timeText: TextView? = null
             private var weatherDescriptionText: TextView? = null
@@ -84,7 +118,7 @@ class ForecastFragment : Fragment() {
             }
 
             @SuppressLint("UseCompatLoadingForDrawables")
-            fun bind(forecast: ForecastForView) {
+            override fun bind(forecast: ForecastForView) {
                 forecastImageView?.setImageDrawable(
                     resources.getDrawable(
                         resources
@@ -101,10 +135,13 @@ class ForecastFragment : Fragment() {
             }
         }
 
-        private fun notifyChanges(oldList: List<ForecastForView>, newList: List<ForecastForView>) {
+        private fun notifyChanges(
+            oldList: List<Pair<Int, ForecastForView>>,
+            newList: List<Pair<Int, ForecastForView>>
+        ) {
             val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
                 override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                    return oldList[oldItemPosition].date == newList[newItemPosition].date
+                    return oldList[oldItemPosition].second.date == newList[newItemPosition].second.date
                 }
 
                 override fun areContentsTheSame(
