@@ -2,6 +2,9 @@ package com.example.myweather.model
 
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
+import android.net.ConnectivityManager
+import android.os.Build
+import android.util.Log
 import com.example.myweather.model.db_service.ForecastRoomDB
 import com.example.myweather.model.entity.ForecastData
 import com.example.myweather.model.entity.ForecastForView
@@ -15,58 +18,81 @@ import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
 import java.util.*
 
+
 class Repository(private val context: Context) {
     private val locationService: LocationService by lazy { LocationServiceImpl() }
     private val weatherService: WeatherService by lazy { WeatherServiceImpl() }
+    val dao = ForecastRoomDB.getDatabase(context).forecastDao()
+    private val mapper by lazy { Mapper() }
 
     @KoinApiExtension
-    fun getWeatherData(): Single<List<ForecastForView>> =
-        weatherService.getWeather(locationService.getLocation())
-            .map { Mapper().invoke(context, it) }
+    fun getWeatherData(): Single<List<ForecastForView>> {
+        val connectivityManager =
+            context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            if (capabilities != null) {
+                return fetchDataByEthernet()
+            }
+        } else {
+            val activeNetworkInfo = connectivityManager.activeNetworkInfo
+            if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
+                return fetchDataByEthernet()
+            }
+        }
+        return fetchDataByDB()
+    }
+
+    @KoinApiExtension
+    private fun fetchDataByEthernet(): Single<List<ForecastForView>> {
+        Log.d("logs", "Ethernet on")
+        return weatherService.getWeather(locationService.getLocation())
+            .map { mapper.invoke(context, it) }
+    }
+
+    private fun fetchDataByDB(): Single<List<ForecastForView>> {
+        Log.d("logs", "Ethernet off")
+        return Single.create<List<ForecastForView>> { emitar -> emitar.onSuccess(dao.getAll()) }
             .subscribeOn(Schedulers.io())
+    }
 
 
     @KoinApiExtension
     inner class Mapper : (Context, ForecastData) -> List<ForecastForView>, KoinComponent {
         override fun invoke(context: Context, data: ForecastData): List<ForecastForView> {
             val newWeatherList = mutableListOf<ForecastForView>()
-            val dao = ForecastRoomDB.getDatabase(context).forecastDao()
-
-            if (context.getSystemService(CONNECTIVITY_SERVICE) != null) {
-                dao.deleteAll()
-                data.list.forEach {
-                    newWeatherList.add(
-                        ForecastForView(
-                            UUID.randomUUID().toString(),
-                            it.dt_txt,
-                            it.weather[0].icon,
-                            data.city.name,
-                            data.city.country,
-                            it.weather[0].description,
-                            (it.main.temp.toInt() - 273).toString(),
-                            it.main.humidity.toString(),
-                            precipitation = "1.0 mm",
-                            it.main.pressure.toString(),
-                            it.wind.speed.toString(),
-                            when ((it.wind.deg * 10).toInt()) {
-                                in 0 until 225 -> "N"
-                                in 225 until 675 -> "NE"
-                                in 675 until 1125 -> "E"
-                                in 1125 until 1575 -> "SE"
-                                in 1575 until 2025 -> "S"
-                                in 2025 until 2475 -> "SW"
-                                in 2475 until 2925 -> "W"
-                                in 2925 until 3375 -> "NW"
-                                in 3375 until 3600 -> "N"
-                                else -> "Error"
-                            }
-                        )
+            dao.deleteAll()
+            data.list.forEach {
+                newWeatherList.add(
+                    ForecastForView(
+                        UUID.randomUUID().toString(),
+                        it.dt_txt,
+                        it.weather[0].icon,
+                        data.city.name,
+                        data.city.country,
+                        it.weather[0].description,
+                        (it.main.temp.toInt() - 273).toString(),
+                        it.main.humidity.toString(),
+                        precipitation = "1.0 mm",
+                        it.main.pressure.toString(),
+                        it.wind.speed.toString(),
+                        when ((it.wind.deg * 10).toInt()) {
+                            in 0 until 225 -> "N"
+                            in 225 until 675 -> "NE"
+                            in 675 until 1125 -> "E"
+                            in 1125 until 1575 -> "SE"
+                            in 1575 until 2025 -> "S"
+                            in 2025 until 2475 -> "SW"
+                            in 2475 until 2925 -> "W"
+                            in 2925 until 3375 -> "NW"
+                            in 3375 until 3600 -> "N"
+                            else -> "Error"
+                        }
                     )
-                }
-                dao.insert(newWeatherList)
-            } else {
-                newWeatherList.addAll(dao.getAll())
+                )
             }
+            dao.insert(newWeatherList)
             return newWeatherList
         }
     }
