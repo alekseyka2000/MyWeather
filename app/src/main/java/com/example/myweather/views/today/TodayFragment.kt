@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import com.example.myweather.databinding.FragmentTodayBinding
 import com.example.myweather.model.entity.ForecastForView
 import com.example.myweather.views.weather_list.ForecastViewModel
+import com.google.android.material.snackbar.Snackbar
 import org.koin.android.viewmodel.ext.android.viewModel
 import org.koin.core.component.KoinApiExtension
 
@@ -34,7 +35,8 @@ class TodayFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.liveData.observe(viewLifecycleOwner, { list ->
-            setTodayFragment(list)
+            setTodayFragment(list.second)
+            Snackbar.make(view, list.first, Snackbar.LENGTH_SHORT).show()
         })
         viewModel.fetchForecastData()
     }

@@ -12,8 +12,8 @@ import org.koin.core.component.KoinApiExtension
 
 class ForecastViewModel(private val repository: Repository) : ViewModel() {
 
-    private val mutableLiveData = MutableLiveData<List<ForecastForView>>()
-    val liveData: LiveData<List<ForecastForView>> = mutableLiveData
+    private val mutableLiveData = MutableLiveData<Pair<String, List<ForecastForView>>>()
+    val liveData: LiveData<Pair<String, List<ForecastForView>>> = mutableLiveData
 
     @KoinApiExtension
     @SuppressLint("CheckResult")

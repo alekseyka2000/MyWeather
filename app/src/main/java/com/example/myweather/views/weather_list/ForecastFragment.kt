@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myweather.R
 import com.example.myweather.model.entity.ForecastForView
+import com.google.android.material.snackbar.Snackbar
 import org.koin.android.viewmodel.ext.android.viewModel
 import org.koin.core.component.KoinApiExtension
 import kotlin.properties.Delegates
@@ -41,7 +42,8 @@ class ForecastFragment : Fragment() {
         }
 
         viewModel.liveData.observe(viewLifecycleOwner, { list ->
-            forecastAdapter.listForecast = list
+            forecastAdapter.listForecast = list.second
+            Snackbar.make(view, list.first, Snackbar.LENGTH_LONG).show()
         })
         viewModel.fetchForecastData()
     }
