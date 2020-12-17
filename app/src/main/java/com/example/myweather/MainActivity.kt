@@ -28,18 +28,6 @@ class MainActivity : AppCompatActivity() {
             .commit()
 
         initKoin()
-
-        val connectivityManager =
-            this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        connectivityManager.let {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                it.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
-                    override fun onAvailable(network: Network) {
-                        //reset()
-                    }
-                })
-            }
-        }
     }
 
     private fun initKoin() {
@@ -62,6 +50,20 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     flowFragment.reset()
                 }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager.let {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                it.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+                    override fun onAvailable(network: Network) {
+                        flowFragment.reset()
+                    }
+                })
             }
         }
     }
