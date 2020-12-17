@@ -1,6 +1,9 @@
 package com.example.myweather
 
+import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.Network
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myweather.di.repositoryModule
@@ -10,6 +13,7 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.core.component.KoinApiExtension
 import org.koin.core.context.startKoin
 
+@KoinApiExtension
 class MainActivity : AppCompatActivity() {
 
     private val flowFragment by lazy { FlowFragment() }
@@ -24,6 +28,18 @@ class MainActivity : AppCompatActivity() {
             .commit()
 
         initKoin()
+
+        val connectivityManager =
+            this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager.let {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                it.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+                    override fun onAvailable(network: Network) {
+                        //reset()
+                    }
+                })
+            }
+        }
     }
 
     private fun initKoin() {
@@ -37,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     @KoinApiExtension
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<String>, grantResults: IntArray
+        permissions: Array<String>, grantResults: IntArray,
     ) {
         when (requestCode) {
             PERMISSION_REQUEST_CODE -> {

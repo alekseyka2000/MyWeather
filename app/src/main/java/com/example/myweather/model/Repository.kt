@@ -2,8 +2,10 @@ package com.example.myweather.model
 
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
+import android.location.Location
 import android.net.ConnectivityManager
 import android.os.Build
+import android.util.Log
 import com.example.myweather.model.db_service.ForecastRoomDB
 import com.example.myweather.model.entity.ForecastData
 import com.example.myweather.model.entity.ForecastForView
@@ -15,7 +17,7 @@ import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.KoinComponent
-import java.util.UUID
+import java.util.*
 
 
 class Repository(private val context: Context) {
@@ -24,31 +26,55 @@ class Repository(private val context: Context) {
     val dao = ForecastRoomDB.getDatabase(context).forecastDao()
 
     @KoinApiExtension
-    fun getWeatherData(): Single<Pair<String,List<ForecastForView>>> {
+    fun getWeatherData(): Single<Pair<String, List<ForecastForView>>> {
+
+        var loc: Pair<String, String> = Pair("empty", "empty")
+
+        locationService.getLocation()
+        locationService.getLM()
+            .addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    Log.d("logs", "${location.latitude} / ${location.longitude}")
+                    loc = Pair(location.latitude.toString(), location.longitude.toString())
+                } else {
+                    Log.d("logs", "999")
+                    locationService.getLocation()
+                }
+            }
+        return getLocation(loc)
+    }
+
+    @KoinApiExtension
+    private fun getLocation(location: Pair<String, String>): Single<Pair<String, List<ForecastForView>>> {
         val connectivityManager =
             context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val capabilities =
                 connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
             if (capabilities != null) {
-                return fetchDataByEthernet()
+                return fetchDataByInternet(location)
             }
         } else {
             val activeNetworkInfo = connectivityManager.activeNetworkInfo
             if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
-                return fetchDataByEthernet()
+                return fetchDataByInternet(location)
             }
         }
         return fetchDataByDB()
     }
 
     @KoinApiExtension
-    private fun fetchDataByEthernet() = weatherService.getWeather(locationService.getLocation())
-        .map { Pair("Ethernet on", Mapper().invoke(context, it)) }
-        .subscribeOn(Schedulers.io())
+    private fun fetchDataByInternet(location: Pair<String, String>) =
+        weatherService.getWeather(location)
+            .map { Pair("Ethernet on", Mapper().invoke(context, it)) }
+            .subscribeOn(Schedulers.io())
 
     private fun fetchDataByDB() = Single.create<Pair<String, List<ForecastForView>>>
-    { emitter -> emitter.onSuccess(Pair("Ethernet off", dao.getAll())) }
+    { emitter ->
+        val result = dao.getAll()
+        if (result.isEmpty()) emitter.onSuccess(Pair("Ethernet off", result))
+        else emitter.onError(Exception("Empty DB"))
+    }
         .subscribeOn(Schedulers.io())
 
     @KoinApiExtension

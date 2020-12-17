@@ -18,14 +18,17 @@ class ForecastViewModel(private val repository: Repository) : ViewModel() {
     @KoinApiExtension
     @SuppressLint("CheckResult")
     fun fetchForecastData() {
-        repository.getWeatherData()
+        try {
+            repository.getWeatherData()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                {
+                {if (it.second.isNotEmpty()){
                     mutableLiveData.value = it
-                    Log.d("logs", it.toString())
+                    Log.d("logs", it.toString())}
+                    else Log.d("logs", "DB is empty turn on the Internet")
                 },
                 { Log.d("logs", "${it.message}") }
-            )
+            )}
+        catch (ex: Exception ){Log.d("logs", "${ex.message}")}
     }
 }

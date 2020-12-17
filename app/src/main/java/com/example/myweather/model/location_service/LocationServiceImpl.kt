@@ -8,17 +8,13 @@ import android.location.Location
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.example.myweather.MainActivity
-import com.example.myweather.model.Repository
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
+import com.google.android.gms.tasks.Task
 import org.koin.core.component.KoinApiExtension
 
 class LocationServiceImpl(private val context: Context) : LocationService {
 
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    private var loc: Pair<String, String> = Pair("empty","empty")
     private val locationRequest = LocationRequest().apply {
         interval = 50000
         fastestInterval = 50000
@@ -32,7 +28,17 @@ class LocationServiceImpl(private val context: Context) : LocationService {
     }
 
     @KoinApiExtension
-    override fun getLocation(): Pair<String, String> {
+    override fun getLocation() {
+        checkPermission()
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+    }
+
+    override fun getLM(): Task<Location> {
+        checkPermission()
+        return fusedLocationClient.lastLocation
+    }
+
+    override fun checkPermission() {
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -50,19 +56,5 @@ class LocationServiceImpl(private val context: Context) : LocationService {
             )
             Log.d("logs", "permission")
         }
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    Log.d("logs", "${location.latitude} / ${location.longitude}")
-                    loc = Pair(location.latitude.toString(), location.longitude.toString())
-                } else {
-                    fusedLocationClient.requestLocationUpdates(
-                        locationRequest,
-                        locationCallback,
-                        null
-                    )
-                }
-            }
-        return loc
     }
 }
