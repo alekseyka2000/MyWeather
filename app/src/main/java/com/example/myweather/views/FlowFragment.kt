@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.myweather.R
 import com.example.myweather.databinding.FragmentFlowBinding
-import com.example.myweather.model.db_service.ForecastDAO
-import com.example.myweather.model.db_service.ForecastRoomDB
 import com.example.myweather.views.today.TodayFragment
 import com.example.myweather.views.weather_list.ForecastFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -57,5 +55,9 @@ class FlowFragment : Fragment() {
                     else -> false
                 }
             }
+    }
+
+    fun reset() {
+        todayFragment.reset()
     }
 }

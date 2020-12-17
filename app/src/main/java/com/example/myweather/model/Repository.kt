@@ -19,7 +19,7 @@ import java.util.UUID
 
 
 class Repository(private val context: Context) {
-    private val locationService: LocationService by lazy { LocationServiceImpl() }
+    private val locationService: LocationService by lazy { LocationServiceImpl(context) }
     private val weatherService: WeatherService by lazy { WeatherServiceImpl() }
     val dao = ForecastRoomDB.getDatabase(context).forecastDao()
 

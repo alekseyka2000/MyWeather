@@ -2,7 +2,9 @@ package com.example.myweather.views.today
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -94,5 +96,9 @@ class TodayFragment : Fragment() {
             intent.type = "text/plain"
             startActivity(Intent.createChooser(intent, "Share today forecast: "))
         }
+    }
+
+    fun reset(){
+        viewModel.fetchForecastData()
     }
 }

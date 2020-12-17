@@ -45,6 +45,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
@@ -59,11 +60,14 @@ dependencies {
     implementation 'io.reactivex.rxjava3:rxjava:3.0.2'
     //Room
     def room_version = "2.2.5"
+    //noinspection GradleDependency
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     // optional - Kotlin Extensions and Coroutines support for Room
+    //noinspection GradleDependency
     implementation "androidx.room:room-ktx:$room_version"
     // optional - Test helpers
+    //noinspection GradleDependency
     testImplementation "androidx.room:room-testing:$room_version"
     //koin
     // Koin for Kotlin
@@ -81,5 +85,5 @@ dependencies {
 // Koin Android Experimental features
     implementation "org.koin:koin-android-ext:$koin_version"
 
-
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
 }
